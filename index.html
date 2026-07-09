@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WRV Codebook</title>
+<meta name="theme-color" content="#111318">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WRV Codes">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="icon" href="./icon-180.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root{
+  --bg:#111318; --panel:#1a1d24; --panel2:#20242c; --line:#2c313b;
+  --amber:#ffb454; --amber-dim:#8a6a3a; --lcd-bg:#201808;
+  --green:#8be28f; --red:#ff6f61;
+  --text:#e8e6e1; --mut:#98a0ad;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --disp:'Barlow Condensed',system-ui,sans-serif;
+  --body:system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg)}
+.rig{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--body);
+  max-width:560px;margin:0 auto;
+  padding:calc(14px + env(safe-area-inset-top)) 14px calc(86px + env(safe-area-inset-bottom));}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+.hide{display:none !important}
+
+.head{display:flex;justify-content:space-between;align-items:flex-start;padding:2px 2px 12px}
+.brand{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:.06em;line-height:1}
+.brand-sub{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mut);margin-top:5px}
+.led-stack{display:flex;align-items:center;gap:6px;padding-top:6px}
+.led{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.led-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--mut)}
+
+.lcd{background:var(--lcd-bg);border:1px solid #3a2d12;border-radius:8px;
+  padding:12px 14px;box-shadow:inset 0 2px 12px rgba(0,0,0,.7), 0 0 0 3px #0c0e12;
+  position:relative;overflow:hidden;margin-bottom:12px;
+  background-image:repeating-linear-gradient(0deg, rgba(255,180,84,.05) 0 1px, transparent 1px 3px);}
+.lcd-main{font-family:var(--mono);font-weight:600;font-size:26px;letter-spacing:.08em;
+  color:var(--amber);text-shadow:0 0 10px rgba(255,180,84,.5);white-space:nowrap;overflow:hidden}
+.lcd-sub{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--amber-dim);margin-top:3px}
+.lcd-hot .lcd-main{color:var(--green);text-shadow:0 0 10px rgba(139,226,143,.5)}
+.cursor{display:inline-block;width:.55em;height:1em;background:var(--amber);margin-left:4px;
+  vertical-align:-.12em;animation:blink 1.1s steps(1) infinite}
+.lcd-hot .cursor{background:var(--green)}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.cursor{animation:none}}
+
+.searchwrap{position:relative;margin-bottom:10px}
+.search{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  color:var(--text);font-family:var(--mono);font-size:16px;padding:11px 38px 11px 12px;-webkit-appearance:none}
+.search::placeholder{color:#6b7280}
+.clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);color:var(--mut);
+  padding:6px 10px;font-size:14px}
+
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:7px 11px;background:var(--panel)}
+.chip-on{color:var(--amber);border-color:var(--amber-dim);background:#241d10}
+.chip-wide{margin-bottom:10px}
+
+.list{border-top:1px solid var(--line)}
+.row{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.row-hot{border-left:2px solid var(--red);padding-left:2px}
+.row-main{flex:1;display:flex;align-items:baseline;gap:12px;text-align:left;padding:11px 4px;min-width:0}
+.row-main:active{background:var(--panel)}
+.code{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--amber);flex:0 0 96px;white-space:nowrap}
+.meaning{font-size:13.5px;color:var(--text);line-height:1.35;min-width:0}
+.star{flex:0 0 auto;color:#4a5160;font-size:16px;padding:0 12px}
+.star-on{color:var(--amber)}
+
+.empty{padding:34px 8px;text-align:center}
+.empty-h{font-family:var(--mono);letter-spacing:.2em;font-size:12px;color:var(--amber-dim)}
+.empty-p{color:var(--mut);font-size:13px;margin-top:8px;line-height:1.5}
+.starterwrap{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.starter{font-family:var(--mono);font-size:12px;color:var(--amber);border:1px solid var(--amber-dim);
+  border-radius:6px;padding:8px 12px;background:#241d10}
+
+.pane{padding-top:2px}
+.pane-note{color:var(--mut);font-size:13px;margin-bottom:10px;line-height:1.5}
+.readout{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%;text-align:left;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:10px}
+.ph{font-family:var(--mono);font-weight:600;font-size:15px;color:var(--amber)}
+.ph+.ph::before{content:"– ";color:var(--mut);font-weight:500}
+.readout-hint{width:100%;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--mut);margin-top:2px}
+.alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin-top:16px}
+.alpha-cell{display:flex;gap:8px;align-items:baseline;background:var(--panel);border:1px solid var(--line);
+  border-radius:6px;padding:8px 10px}
+.alpha-k{font-family:var(--mono);font-weight:600;color:var(--amber);font-size:13px}
+.alpha-v{font-size:12.5px;color:var(--text)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:26px 18px;
+  text-align:center;margin-top:6px}
+.card-q{font-size:17px;line-height:1.45;min-height:52px;display:flex;align-items:center;justify-content:center}
+.card-a{font-family:var(--mono);font-weight:600;font-size:22px;color:var(--green);margin-top:16px}
+.card-btns{display:flex;gap:10px;margin-top:18px}
+.btn{flex:1;font-family:var(--mono);font-size:12px;letter-spacing:.12em;border-radius:8px;padding:13px 8px;
+  border:1px solid var(--line);background:var(--panel2)}
+.btn-show{margin-top:18px;width:100%;color:var(--amber);border-color:var(--amber-dim)}
+.btn-hit{color:var(--green);border-color:#3a5a3e}
+.btn-miss{color:var(--red);border-color:#5a3a38}
+.score{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--mut);
+  text-align:center;margin-top:16px}
+
+.dock{position:fixed;left:0;right:0;bottom:0;display:flex;max-width:560px;margin:0 auto;
+  background:rgba(17,19,24,.96);backdrop-filter:blur(6px);border-top:1px solid var(--line)}
+.dock-btn{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--mut);
+  padding:15px 0 calc(15px + env(safe-area-inset-bottom));border-top:2px solid transparent}
+.dock-on{color:var(--amber);border-top-color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="rig">
+  <header class="head">
+    <div>
+      <div class="brand">WRV CODEBOOK</div>
+      <div class="brand-sub">TEN-CODE REFERENCE • CH 01 • KETCHUM / SUN VALLEY</div>
+    </div>
+    <div class="led-stack"><span class="led"></span> <span class="led-lab">RX</span></div>
+  </header>
+
+  <div class="lcd" id="lcd">
+    <div class="lcd-main"><span id="lcdMain">STANDBY</span><span class="cursor"></span></div>
+    <div class="lcd-sub" id="lcdSub">SQUELCH CLOSED</div>
+  </div>
+
+  <!-- CODES -->
+  <section id="paneCodes">
+    <div class="searchwrap">
+      <input class="search" id="q" type="search" autocomplete="off" autocorrect="off" autocapitalize="off"
+             placeholder="Search code or meaning…" aria-label="Search codes">
+      <button class="clear hide" id="clearBtn" aria-label="Clear search">✕</button>
+    </div>
+    <div class="chips" id="chips" role="tablist" aria-label="Categories"></div>
+    <main class="list" id="list"></main>
+  </section>
+
+  <!-- SPELL -->
+  <section id="paneSpell" class="pane hide">
+    <p class="pane-note">Type a plate, name, or callsign. Read it back letter by letter.</p>
+    <input class="search" id="spellIn" type="text" autocomplete="off" autocorrect="off"
+           placeholder="e.g. 7B44921 or FATE" aria-label="Word to spell">
+    <button class="readout hide" id="readout"></button>
+    <div class="alpha" id="alpha"></div>
+  </section>
+
+  <!-- DRILL -->
+  <section id="paneDrill" class="pane hide">
+    <div class="chips" id="poolChips"></div>
+    <button class="chip chip-wide" id="dirBtn">MEANING → CODE ⇄</button>
+    <div id="drillBody"></div>
+    <div class="score" id="score">SESSION 0/0</div>
+  </section>
+
+  <nav class="dock" aria-label="Sections">
+    <button class="dock-btn dock-on" data-tab="codes">CODES</button>
+    <button class="dock-btn" data-tab="spell">SPELL</button>
+    <button class="dock-btn" data-tab="drill">DRILL</button>
+  </nav>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const D = [];
+const addCat = (cat, rows) => rows.forEach(([c, m, f]) => D.push({ c, m, cat, f: !!f }));
+
+addCat("ten", [
+  ["10-7A","Out of service at home"],["10-7B","Out of service — personal"],["10-7od","Out of service — off duty"],
+  ["10-8","In service / available for assignment"],["10-9","Repeat last transmission"],["10-10","Off duty"],
+  ["10-10A","Off duty at home"],["10-11","Identify this frequency"],["10-12","Visitors are present (be discreet)"],
+  ["10-13","Advise weather and road conditions"],["10-14","Citizen holding suspect"],["10-15","Prisoner in custody"],
+  ["10-16","Pick up prisoner"],["10-17","Request for gasoline"],["10-18","Equipment exchange"],
+  ["10-19","Return / returning to the station"],["10-20","Location?"],["10-21","Telephone ___"],
+  ["10-21a","Advise home that I will return at ___"],["10-21b","Phone your home"],["10-21r","Phone radio dispatch"],
+  ["10-22","Disregard the last assignment"],["10-22c","Leave area if all secure"],["10-23","Standby"],
+  ["10-24","Request car-to-car transmission"],["10-25","Do you have contact with ___?"],["10-26","Clear"],
+  ["10-27","Driver's license check"],["10-28","Vehicle registration request"],
+  ["10-29","Check wants/warrants — vehicle (PIN, SVS)"],["10-29a","Check wants/warrants — subject (PIN)"],
+  ["10-29c","Check complete — subject"],["10-29f","Subject is wanted for a felony"],
+  ["10-29h","Caution — severe hazard potential"],["10-29r","Check wants/record — subject (PIN, CJIC)"],
+  ["10-29m","Subject is wanted for a misdemeanor"],["10-29v","Vehicle wanted in connection with a crime"],
+  ["10-30","Does not conform to regulations"],["10-32","Drowning"],["10-33","Alarm sounding"],
+  ["10-34","Assist at office"],["10-35","Time check"],["10-36","Confidential information"],
+  ["10-37","Identify the operator"],["10-39","Can ___ come to the radio?"],
+  ["10-40","Is ___ available for a telephone call?"],["10-42","Check on the welfare of / at ___"],
+  ["10-43","Call a doctor"],["10-45","What is the condition of the patient?"],
+  ["10-45A","Patient condition: good"],["10-45B","Patient condition: serious"],
+  ["10-45C","Patient condition: critical"],["10-45D","Patient is deceased"],
+  ["10-46","Sick person (ambulance en route)"],["10-48","Ambulance transfer call"],
+  ["10-49","Proceed to / en route to ___"],["10-50","Under influence of narcotics / take a report"],
+  ["10-51","Subject is drunk"],["10-52","Resuscitator needed"],["10-53","Person down"],
+  ["10-54","Possible dead body"],["10-55","Coroner's case"],["10-56","Suicide"],["10-56A","Suicide attempt"],
+  ["10-57","Firearm discharged"],["10-58","Garbage complaint"],["10-59","Security check / malicious mischief"],
+  ["10-60","Lockout"],["10-61","Miscellaneous public service"],["10-62","Meet a citizen"],
+  ["10-62A","Take a report from a citizen"],["10-62B","Civil standby"],["10-63","Prepare to copy"],
+  ["10-64","Found property"],["10-65","Missing person"],["10-66","Suspicious person"],
+  ["10-67","Person calling for help"],["10-68","Call for police made via telephone"],["10-70","Prowler"],
+  ["10-71","Shooting"],["10-72","Knifing"],["10-73","How do you receive?"],["10-79","Bomb threat"],
+  ["10-80","Explosion"],["10-86","Any traffic?"],["10-87","Meet the officer at ___"],
+  ["10-88","Fill with the officer / assume your post"],["10-91","Animal"],["10-91a","Stray"],
+  ["10-91b","Noisy animal"],["10-91c","Injured animal"],["10-91d","Dead animal"],["10-91e","Animal bite"],
+  ["10-91g","Animal pickup"],["10-91h","Stray horse"],["10-91j","Pickup / collect ___"],
+  ["10-91L","Leash law violation"],["10-91V","Vicious animal"],
+  ["10-95","Pedestrian / requesting ID / tech unit"],["10-96","Out of vehicle — pedestrian; send backup"],
+  ["10-97","Arrived at the scene"],["10-98","Available for assignment"],["10-99","Open police garage door"],
+  ["10-100","Civil disturbance — mutual aid standby"],["10-101","Civil disturbance — mutual aid request"]
+]);
+
+addCat("eleven", [
+  ["11-10","Take a report"],["11-24","Abandoned automobile"],["11-25","Traffic hazard"],
+  ["11-26","Abandoned bicycle"],["11-27","10-27 with the driver being held"],
+  ["11-28","10-28 with the driver being held"],["11-40","Advise if an ambulance is needed"],
+  ["11-41","Ambulance needed"],["11-42","No ambulance needed"],["11-48","Furnish transportation"],
+  ["11-51","Escort"],["11-52","Funeral detail"],["11-54","Suspicious vehicle"],
+  ["11-55","Officer being followed by automobile"],
+  ["11-56","Officer followed by auto containing dangerous persons"],
+  ["11-57","Unidentified auto appeared at scene of assignment"],
+  ["11-58","Radio traffic is monitored — phone all non-routine messages"],
+  ["11-59","Intensive attention to high-hazard / business areas"],["11-60","Attack in a high-hazard area"],
+  ["11-65","Signal light is out"],["11-66","Defective traffic light"],["11-71","Fire"],
+  ["11-78","Aircraft accident"],["11-79","Accident — ambulance sent"],["11-80","Accident — major injuries"],
+  ["11-81","Accident — minor injuries"],["11-82","Accident — no injuries"],["11-83","Accident — no details"],
+  ["11-84","Direct traffic"],["11-85","Tow truck required"],["11-94","Pedestrian stop"],
+  ["11-95","Routine traffic stop"],["11-96","Checking a suspicious vehicle"],
+  ["11-97","Time / security check on patrol vehicles"],["11-98","Meet ___"],
+  ["11-99","Officer needs help", true]
+]);
+
+addCat("nine", [
+  ["904","Fire"],["904A","Automobile fire"],["904B","Building fire"],["904G","Grass fire"],
+  ["909","Traffic problem — police needed"],["910","Can handle this detail"],["925","Suspicious vehicle"],
+  ["932","Turn on ___ mobile relay at ___"],["933","Turn off mobile relay"],
+  ["949","Burning inspection at ___"],["950","Control burn in progress / about to begin / ended"],
+  ["951","Need fire investigator"],["952","Report on conditions"],["953","Investigate smoke"],
+  ["953A","Investigate gas"],["954","Off the air at the scene of the fire"],["955","Fire is under control"],
+  ["956","Assignment not finished"],["957","Delayed response of ___ minutes"],
+  ["980","Restrict calls to emergency only"],["981","Resume normal traffic"],
+  ["1000","Plane crash"],["3000","Roadblock"]
+]);
+
+addCat("codeN", [
+  ["Code 1","Do so at your convenience"],["Code 2","Urgent"],["Code 3","Emergency — lights and siren"],
+  ["Code 4","No further assistance needed"],["Code 5","Stakeout"],["Code 6","Responding from a long distance"],
+  ["Code 7","Mealtime"],["Code 8","Request cover / backup"],["Code 9","Set up a roadblock"],
+  ["Code 10","Bomb threat"],["Code 12","Notify news media"],["Code 20","Officer needs assistance"],
+  ["Code 22","Restricted radio traffic"],["Code 30","Officer needs HELP — emergency", true],
+  ["Code 33","Mobile emergency — clear this radio channel", true],["Code 43","TAC forces committed"],
+  ["AID","Public safety assistance"]
+]);
+
+addCat("pen", [
+  ["32 PC","Accessory to a felony"],["67 PC","Offer a bribe to executive officer"],
+  ["69 PC","Deter/resist executive officer by threat, force, or violence"],
+  ["71 PC","Threaten injury to school officer or employee"],
+  ["102 PC","Take or destroy property in custody of officer"],["118 PC","Perjury"],
+  ["136.1(a) PC","Intimidation of witness/victim from attending or testifying"],
+  ["136.1(b1) PC","Intimidation of witness/victim from reporting a crime"],
+  ["136.1(c1) PC","Intimidation of witness/victim by force or threat of violence"],
+  ["137(a) PC","Offer bribe to influence testimony"],["146a PC","Impersonating a peace officer"],
+  ["148 PC","Interfering with an officer"],["148.1 PC","False report of a bomb"],
+  ["148.5 PC","False report of a crime"],["150 PC","Refuse to aid an officer"],
+  ["151(a1) PC","Advocate killing/injuring an officer"],["187 PC","Murder"],
+  ["192.1 PC","Voluntary manslaughter"],["192.2 PC","Involuntary manslaughter"],
+  ["192.3 PC","Vehicular manslaughter"],["203 PC","Mayhem"],["207 PC","Kidnap"],
+  ["209a PC","Kidnaping for ransom/extortion"],["209b PC","Kidnaping for robbery"],["211 PC","Robbery"],
+  ["220 PC","Assault with intent to commit mayhem or sex offense"],["236 PC","False imprisonment"],
+  ["240 PC","Assault"],["240-242 PC","Assault and battery"],
+  ["241 PC","Assault on peace officer / EMT / firefighter"],["242 PC","Battery"],
+  ["243a PC","Battery against a citizen"],["243b PC","Battery against a peace officer"],
+  ["244 PC","Throwing acid with intent to disfigure or burn"],["245 PC","Assault with a deadly weapon"],
+  ["245b PC","ADW against a peace officer"],["246 PC","Shooting at an inhabited dwelling or vehicle"],
+  ["261 PC","Rape"],["261.5 PC","Rape — under 18 years of age"],["262 PC","Rape of spouse"],
+  ["266h PC","Pimping"],["266i PC","Pandering"],["270 PC","Child neglect / failure to pay support"],
+  ["271 PC","Child abandonment — under 14"],["272 PC","Contributing to the delinquency of a minor"],
+  ["273.5a PC","Corporal injury to spouse/cohabitant"],["273d PC","Corporal injury upon child"],
+  ["278 PC","Child abduction from parent or guardian"],["285 PC","Incest"],["286 PC","Sodomy"],
+  ["288 PC","Sex crimes against children"],["288a PC","Oral copulation"],["290 PC","Sex registration"],
+  ["311.2a PC","Possession of obscene matter"],["311.2b PC","Obscene matter depicting a minor"],
+  ["314 PC","Indecent exposure"],["330 PC","Gambling"],
+  ["373 PC","Public nuisance misdemeanors"],["374b PC","Garbage dumping"],
+  ["402b PC","Abandoned refrigerator"],["415 PC","Disturbing the peace"],
+  ["417 PC","Brandishing a weapon"],["451 PC","Arson"],["459 PC","Burglary"],["470 PC","Forgery"],
+  ["476a PC","Insufficient funds (checks)"],["484e PC","Theft of a credit card"],
+  ["484f PC","Forged credit card"],["484g PC","Illegal use of a credit card"],
+  ["487 PC","Grand theft ($400+)"],["488 PC","Petty theft (under $400)"],
+  ["496 PC","Receiving stolen property"],["499b PC","Joyriding"],["503 PC","Embezzlement"],
+  ["537 PC","Nonpayment of a bill (restaurants, etc.)"],["537e PC","Article with serial number removed"],
+  ["555 PC","Posted trespass"],["594 PC","Vandalism"],["597 PC","Killing or abusing animals"],
+  ["602L PC","Trespass"],["603 PC","Trespass with damage"],["647b PC","Prostitution"],
+  ["647f PC","Drunk in public"],["647g PC","Loitering on private property at night"],
+  ["647h PC","Peeking into an inhabited building"],["647a PC","Annoy/molest child"],
+  ["653m PC","Harassment by phone (obscene call)"],["4532 PC","Escape"],
+  ["12020 PC","Possession of a deadly weapon"],["12025 PC","Possession of a concealed firearm"],
+  ["12031 PC","Possession of a loaded firearm"]
+]);
+
+addCat("veh", [
+  ["10851 VC","Auto theft"],["10852 VC","Malicious mischief to a vehicle"],
+  ["22500e VC","Vehicle blocking a driveway"],["23109 VC","Exhibition of speed"],
+  ["23110 VC","Throwing articles at a vehicle"],["4601 VC","Suspended or revoked license"],
+  ["20001 VC","Hit and run — injury or death"],["20002 VC","Hit and run — property damage"],
+  ["21111 VC","Throwing article"],["22348 VC","Maximum speed law — 55 MPH"],
+  ["23112 VC","Throwing garbage on highway"],["22350 VC","Basic speed law — unsafe speed"],
+  ["23152 VC","Drunk driving"]
+]);
+
+addCat("hs", [
+  ["11350 HS","Possession (heroin, cocaine, etc.)"],["11351 HS","Possession for sales"],
+  ["11352 HS","Sale / transportation"],["11357a HS","Possession of hashish"],
+  ["11357b HS","Marijuana — possession of less than 1 oz"],["11357c HS","Marijuana — possession of more than 1 oz"],
+  ["11358 HS","Cultivation"],["11359 HS","Marijuana — possession for sales"],
+  ["11360a HS","Marijuana — sale / transportation"],
+  ["11377 HS","Possession (barbiturates, amphetamines, LSD)"],["11378 HS","Possession for sale"],
+  ["5150 HS","Mental / emotional"],["5170 HS","Unable to care for self"],["11364 HS","Paraphernalia"],
+  ["11368 HS","Forged prescription"],["11550 HS","Under influence of a controlled substance"],
+  ["12677 HS","Fireworks"]
+]);
+
+const CATS = [
+  { id:"all", label:"ALL" },{ id:"fav", label:"★" },{ id:"ten", label:"10-CODES" },
+  { id:"eleven", label:"11-CODES" },{ id:"nine", label:"900s" },{ id:"codeN", label:"CODE #" },
+  { id:"pen", label:"PENAL" },{ id:"veh", label:"VEHICLE" },{ id:"hs", label:"H&amp;S" }
+];
+
+const PHONETIC = {
+  A:"Adam",B:"Boy",C:"Charles",D:"David",E:"Edward",F:"Frank",G:"George",H:"Henry",I:"Ida",
+  J:"John",K:"King",L:"Lincoln",M:"Mary",N:"Nora",O:"Ocean",P:"Paul",Q:"Queen",R:"Robert",
+  S:"Sam",T:"Tom",U:"Union",V:"Victor",W:"William",X:"X-ray",Y:"Yellow",Z:"Zebra",
+  "0":"Zero","1":"One","2":"Two","3":"Three","4":"Four","5":"Five","6":"Six","7":"Seven","8":"Eight","9":"Niner"
+};
+
+const STARTERS = ["10-20","10-9","10-19","10-23","10-86","Code 7"];
+const STORE_KEY = "wrv-codebook";
+
+/* ---------------- STATE ---------------- */
+let q = "", cat = "all", tab = "codes";
+let favs = new Set();
+try {
+  const raw = localStorage.getItem(STORE_KEY);
+  if (raw) favs = new Set(JSON.parse(raw).favs || []);
+} catch (e) {}
+
+function saveFavs() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ favs: [...favs] })); } catch (e) {}
+}
+
+/* ---------------- HELPERS ---------------- */
+const $ = (id) => document.getElementById(id);
+const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+const esc = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function copyText(t) {
+  return new Promise((res) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(()=>res(true)).catch(fallback);
+    } else fallback();
+    function fallback() {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta); res(true);
+      } catch (e) { res(false); }
+    }
+  });
+}
+
+/* ---------------- LCD ---------------- */
+let flashTimer = null;
+function setLcd(main, sub, hot) {
+  $("lcdMain").textContent = main;
+  $("lcdSub").textContent = sub;
+  $("lcd").classList.toggle("lcd-hot", !!hot);
+}
+function lcdIdle(results) {
+  if (flashTimer) return;
+  if (q.trim()) setLcd(q.trim().toUpperCase().slice(0,14), results.length + " MATCH" + (results.length===1?"":"ES"));
+  else setLcd("STANDBY", results.length + " ENTRIES • " + cat.toUpperCase());
+}
+function flash(main, sub) {
+  setLcd(main, sub, true);
+  if (flashTimer) clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { flashTimer = null; setLcd("STANDBY","SQUELCH CLOSED"); }, 1600);
+}
+
+/* ---------------- CODES TAB ---------------- */
+function getResults() {
+  let rows = cat==="all" ? D : cat==="fav" ? D.filter(r=>favs.has(r.c)) : D.filter(r=>r.cat===cat);
+  const nq = norm(q);
+  if (nq) rows = rows.filter(r => norm(r.c).includes(nq) || r.m.toLowerCase().includes(q.toLowerCase().trim()));
+  return rows;
+}
+
+function renderChips() {
+  $("chips").innerHTML = CATS.map(c =>
+    `<button class="chip${cat===c.id?" chip-on":""}" data-cat="${c.id}">${c.label}</button>`).join("");
+}
+
+function renderList() {
+  const results = getResults();
+  const list = $("list");
+  if (!results.length) {
+    if (cat==="fav" && !q) {
+      list.innerHTML = `<div class="empty"><p class="empty-h">NO STARRED CODES</p>
+        <p class="empty-p">Star the ones you two actually use. Suggested starters:</p>
+        <div class="starterwrap">${STARTERS.map(s=>`<button class="starter" data-star="${s}">★ ${s}</button>`).join("")}</div></div>`;
+    } else {
+      list.innerHTML = `<div class="empty"><p class="empty-h">NO TRAFFIC</p>
+        <p class="empty-p">Nothing matches "${esc(q)}". Try fewer letters or a different category.</p></div>`;
+    }
+  } else {
+    list.innerHTML = results.map(r =>
+      `<div class="row${r.f?" row-hot":""}">
+        <button class="row-main" data-copy="${esc(r.c)}">
+          <span class="code">${esc(r.c)}</span><span class="meaning">${esc(r.m)}</span>
+        </button>
+        <button class="star${favs.has(r.c)?" star-on":""}" data-fav="${esc(r.c)}" aria-label="Toggle star">★</button>
+      </div>`).join("");
+  }
+  lcdIdle(results);
+}
+
+$("list").addEventListener("click", async (e) => {
+  const copyBtn = e.target.closest("[data-copy]");
+  const favBtn  = e.target.closest("[data-fav]");
+  const starter = e.target.closest("[data-star]");
+  if (favBtn) {
+    const c = favBtn.dataset.fav;
+    favs.has(c) ? favs.delete(c) : favs.add(c);
+    saveFavs(); renderList(); return;
+  }
+  if (starter) { favs.add(starter.dataset.star); saveFavs(); renderList(); return; }
+  if (copyBtn) {
+    const c = copyBtn.dataset.copy;
+    const row = D.find(r=>r.c===c);
+    const ok = await copyText(c);
+    flash(c.toUpperCase().slice(0,14), ok ? "COPIED TO CLIPBOARD" : row.m.toUpperCase().slice(0,26));
+  }
+});
+
+$("chips").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-cat]");
+  if (!b) return;
+  cat = b.dataset.cat; renderChips(); renderList();
+});
+
+$("q").addEventListener("input", (e) => {
+  q = e.target.value;
+  $("clearBtn").classList.toggle("hide", !q);
+  renderList();
+});
+$("clearBtn").addEventListener("click", () => {
+  q = ""; $("q").value = ""; $("clearBtn").classList.add("hide"); renderList(); $("q").focus();
+});
+
+/* ---------------- SPELL TAB ---------------- */
+$("alpha").innerHTML = Object.entries(PHONETIC).filter(([k])=>/[A-Z]/.test(k))
+  .map(([k,v])=>`<div class="alpha-cell"><span class="alpha-k">${k}</span><span class="alpha-v">${v}</span></div>`).join("");
+
+let spellOut = "";
+$("spellIn").addEventListener("input", (e) => {
+  const parts = e.target.value.toUpperCase().split("").map(ch=>PHONETIC[ch]).filter(Boolean);
+  spellOut = parts.join(" – ");
+  const ro = $("readout");
+  if (!parts.length) { ro.classList.add("hide"); return; }
+  ro.classList.remove("hide");
+  ro.innerHTML = parts.map(p=>`<span class="ph">${p}</span>`).join("") +
+    `<span class="readout-hint">tap to copy</span>`;
+});
+$("readout").addEventListener("click", async () => {
+  if (!spellOut) return;
+  await copyText(spellOut);
+  flash("COPIED","PHONETIC STRING");
+});
+
+/* ---------------- DRILL TAB ---------------- */
+const POOLS = [
+  { id:"fav", label:"★ STARRED" },{ id:"ten", label:"10-CODES" },
+  { id:"codeN", label:"CODE #" },{ id:"all", label:"ALL" }
+];
+let pool = "ten", dir = "m2c", card = null, shown = false;
+let score = { right:0, total:0, streak:0 };
+
+function poolRows() {
+  if (pool==="fav") return D.filter(r=>favs.has(r.c));
+  if (pool==="all") return D;
+  return D.filter(r=>r.cat===pool);
+}
+function draw() {
+  const rows = poolRows();
+  if (!rows.length) { card = null; renderDrill(); return; }
+  let next = rows[Math.floor(Math.random()*rows.length)];
+  if (rows.length>1 && card && next.c===card.c) next = rows[(rows.indexOf(next)+1)%rows.length];
+  card = next; shown = false; renderDrill();
+}
+function renderDrill() {
+  $("poolChips").innerHTML = POOLS.map(p =>
+    `<button class="chip${pool===p.id?" chip-on":""}" data-pool="${p.id}">${p.label}</button>`).join("");
+  $("dirBtn").textContent = (dir==="m2c" ? "MEANING → CODE" : "CODE → MEANING") + " ⇄";
+  const body = $("drillBody");
+  if (!card) {
+    body.innerHTML = `<div class="empty"><p class="empty-h">EMPTY POOL</p>
+      <p class="empty-p">Star some codes on the Codes tab, then drill them here.</p></div>`;
+  } else {
+    body.innerHTML = `<div class="card">
+      <div class="card-q">${esc(dir==="m2c" ? card.m : card.c)}</div>
+      ${shown
+        ? `<div class="card-a">${esc(dir==="m2c" ? card.c : card.m)}</div>
+           <div class="card-btns">
+             <button class="btn btn-miss" data-grade="0">MISSED</button>
+             <button class="btn btn-hit" data-grade="1">GOT IT</button>
+           </div>`
+        : `<button class="btn btn-show" id="showBtn">SHOW ANSWER</button>`}
+    </div>`;
+  }
+  $("score").textContent = score.total>0
+    ? `${score.right}/${score.total} CORRECT • STREAK ${score.streak}` : "SESSION 0/0";
+}
+$("paneDrill").addEventListener("click", (e) => {
+  const p = e.target.closest("[data-pool]");
+  if (p) { pool = p.dataset.pool; draw(); return; }
+  if (e.target.closest("#dirBtn")) { dir = dir==="m2c"?"c2m":"m2c"; draw(); return; }
+  if (e.target.closest("#showBtn")) { shown = true; renderDrill(); return; }
+  const g = e.target.closest("[data-grade]");
+  if (g) {
+    const ok = g.dataset.grade==="1";
+    score = { right: score.right+(ok?1:0), total: score.total+1, streak: ok?score.streak+1:0 };
+    draw();
+  }
+});
+
+/* ---------------- TABS ---------------- */
+document.querySelector(".dock").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-tab]");
+  if (!b) return;
+  tab = b.dataset.tab;
+  document.querySelectorAll(".dock-btn").forEach(x=>x.classList.toggle("dock-on", x===b));
+  $("paneCodes").classList.toggle("hide", tab!=="codes");
+  $("paneSpell").classList.toggle("hide", tab!=="spell");
+  $("paneDrill").classList.toggle("hide", tab!=="drill");
+  if (tab==="drill") { if (pool==="fav" && !favs.size) pool = "ten"; draw(); }
+  if (tab==="codes") renderList();
+});
+
+/* ---------------- BOOT ---------------- */
+if (favs.size >= 4) pool = "fav";
+renderChips(); renderList(); renderDrill();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
